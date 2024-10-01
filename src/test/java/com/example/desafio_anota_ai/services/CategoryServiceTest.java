@@ -1,6 +1,7 @@
 package com.example.desafio_anota_ai.services;
 
 import com.example.desafio_anota_ai.domain.category.Category;
+import com.example.desafio_anota_ai.domain.category.CategoryDTO;
 import com.example.desafio_anota_ai.domain.category.exceptions.CategoryNotFoundException;
 import com.example.desafio_anota_ai.repositories.CategoryRepository;
 import com.example.desafio_anota_ai.utils.MockCategories;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 import static com.example.desafio_anota_ai.utils.MockCategories.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +38,22 @@ class CategoryServiceTest {
     }
 
     @Test
-    void insert() {
+    void insertSuccess() {
+        final var input = new CategoryDTO("title", "description", "ownerId");
+        final var category = new Category(input);
+
+        given(repository.save(category)).willReturn(category);
+
+        final var actual = service.insert(input);
+
+        assertEquals(category, actual);
+
+    }
+
+    @Test
+    void updateNonexistentCategory() {
+        assertThrows(CategoryNotFoundException.class,
+                () -> service.update("id", null));
     }
 
     @Test
@@ -53,6 +70,7 @@ class CategoryServiceTest {
     }
 
     @Test
+    @DisplayName("Should get a Category by Id")
     void getById() {
         Category category = mockCategoryEntity();
         when(repository.findById(CATEGORY_ID)).thenReturn(Optional.of(category));
@@ -61,10 +79,6 @@ class CategoryServiceTest {
 
         assertNotNull(result);
         Mockito.verify(repository, times(1)).findById(CATEGORY_ID);
-    }
-
-    @Test
-    void update() {
     }
 
     @Test
